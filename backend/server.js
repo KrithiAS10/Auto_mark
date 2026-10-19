@@ -2,7 +2,13 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const cors = require("cors");
 
+app.use(
+  cors({
+    origin: "https://auto-mark-9uwk.vercel.app",
+  }),
+);
 dotenv.config();
 
 const app = express();
@@ -25,17 +31,21 @@ app.get("/", (req, res) => {
 app.use("/api/products", require("./routes/products"));
 
 // Connect to MongoDB and start the server
+
 async function startServer() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
 
     console.log("MongoDB connected!");
 
-    app.listen(5000, () => {
-      console.log("Auto-Mark backend is running on http://localhost:5000");
+    const PORT = process.env.PORT || 5000;
+
+    app.listen(PORT, () => {
+      console.log(`Auto-Mark backend is running on port ${PORT}`);
     });
   } catch (error) {
     console.error("Failed to connect to MongoDB:", error.message);
+    process.exit(1);
   }
 }
 
