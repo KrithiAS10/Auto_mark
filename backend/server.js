@@ -2,21 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const cors = require("cors");
 
-app.use(
-  cors({
-    origin: "https://auto-mark-9uwk.vercel.app",
-  }),
-);
 dotenv.config();
 
 const app = express();
 
-// Allow requests from the React frontend
+// Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["https://auto-mark-9uwk.vercel.app", "http://localhost:5173"],
   }),
 );
 
@@ -30,23 +24,47 @@ app.get("/", (req, res) => {
 // Products API
 app.use("/api/products", require("./routes/products"));
 
-// Connect to MongoDB and start the server
+// Connect to MongoDB once and reuse the connection
+let dbConnectionPromise;
 
-async function startServer() {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-
-    console.log("MongoDB connected!");
-
-    const PORT = process.env.PORT || 5000;
-
-    app.listen(PORT, () => {
-      console.log(`Auto-Mark backend is running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to connect to MongoDB:", error.message);
-    process.exit(1);
+function connectDB() {
+  if (mongoose.connection.readyState === 1) {
+    return Promise.resolve();
   }
+
+  if (!dbConnectionPromise) {
+    dbConnectionPromise = mongoose
+      .connect(process.env.MONGODB_URI)
+      .catch((error) => {
+        dbConnectionPromise = null;
+        throw error;
+      });
+  }
+
+  return dbConnectionPromise;
 }
 
-startServer();
+// Ensure MongoDB is connected before handling API requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    res.status(503).json({
+      message: "Database connection failed",
+    });
+  }
+});
+
+// Export the Express app for Vercel
+module.exports = app;
+
+// Start a local server during development
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+
+  app.listen(PORT, () => {
+    console.log(`Auto-Mark backend is running on port ${PORT}`);
+  });
+}
