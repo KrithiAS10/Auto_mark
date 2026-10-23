@@ -6,9 +6,13 @@ const Product = require("../models/Product");
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find();
-    res.json(products);
+    res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch products" });
+    console.error("Failed to fetch products:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch products",
+    });
   }
 });
 
@@ -18,7 +22,11 @@ router.post("/", async (req, res) => {
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Failed to add product:", error);
+
+    res.status(400).json({
+      message: error.message,
+    });
   }
 });
 
