@@ -24,14 +24,14 @@ app.use(
 // 2. Parse JSON requests
 app.use(express.json());
 
-// 3. Health check (does not require MongoDB)
+// 3. Health check
 app.get("/", (req, res) => {
   res.status(200).json({
     message: "Auto-Mark backend is running!",
   });
 });
 
-// 4. MongoDB connection management
+// 4. MongoDB connection
 let dbConnectionPromise;
 
 async function connectDB() {
@@ -71,10 +71,10 @@ app.use("/api", async (req, res, next) => {
   }
 });
 
-// 6. Products API routes
+// 6. Products API
 app.use("/api/products", require("./routes/products"));
 
-// 7. Handle unknown routes
+// 7. Unknown routes
 app.use((req, res) => {
   res.status(404).json({
     message: "Route not found",
@@ -82,7 +82,7 @@ app.use((req, res) => {
   });
 });
 
-// 8. Handle unexpected errors
+// 8. Error handler
 app.use((error, req, res, next) => {
   console.error("Server error:", error.message);
 
@@ -95,7 +95,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 9. Export for Vercel
+// 9. Export app for Vercel
 module.exports = app;
 
 // 10. Start server locally
