@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getProducts } from "../api";
 
 import downloadIcon from "../../icon/download.svg";
 import homeIcon from "../../icon/home.svg";
@@ -17,15 +18,13 @@ const Order = () => {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
-      .then((response) => {
-        if (!response.ok) throw new Error("Could not fetch products");
-        return response.json();
-      })
-      .then((data) => setProducts(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  getProducts()
+    .then((data) => {
+      setProducts(Array.isArray(data) ? data : data.products || []);
+    })
+    .catch((err) => setError(err.message))
+    .finally(() => setLoading(false));
+}, []);
 
   const brands = [
     "All",
