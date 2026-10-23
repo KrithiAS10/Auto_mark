@@ -1,15 +1,22 @@
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
 
-if (!BACKEND) {
-  throw new Error("VITE_BACKEND_URL is missing");
-}
-
 export async function getProducts() {
-  const response = await fetch(`${BACKEND}/api/products`);
-
-  if (!response.ok) {
-    throw new Error(`Could not fetch products (${response.status})`);
+  if (!BACKEND) {
+    throw new Error(
+      "VITE_BACKEND_URL is missing. Check your frontend environment variables.",
+    );
   }
 
-  return response.json();
+  try {
+    const response = await fetch(`${BACKEND}/api/products`);
+
+    if (!response.ok) {
+      throw new Error(`Backend returned status ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Products API error:", error);
+    throw error;
+  }
 }
