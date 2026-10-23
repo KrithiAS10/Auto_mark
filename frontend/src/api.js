@@ -1,20 +1,14 @@
-const BACKEND = import.meta.env.BACKEND_URL;
+const BACKEND = import.meta.env.VITE_BACKEND_URL;
+
+if (!BACKEND) {
+  throw new Error("VITE_BACKEND_URL is missing");
+}
 
 export async function getProducts() {
-  if (!BACKEND) {
-    throw new Error("BACKEND_URL is missing");
-  }
-
   const response = await fetch(`${BACKEND}/api/products`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch products. Status: ${response.status}`);
-  }
-
-  const contentType = response.headers.get("content-type");
-
-  if (!contentType?.includes("application/json")) {
-    throw new Error("Backend returned HTML instead of JSON");
+    throw new Error(`Could not fetch products (${response.status})`);
   }
 
   return response.json();
