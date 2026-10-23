@@ -16,20 +16,12 @@ app.use(
 
 app.use(express.json());
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Auto-Mark backend is running!");
-});
-
-// Products API
-app.use("/api/products", require("./routes/products"));
-
-// Connect to MongoDB once and reuse the connection
+// Connect to MongoDB
 let dbConnectionPromise;
 
-function connectDB() {
+async function connectDB() {
   if (mongoose.connection.readyState === 1) {
-    return Promise.resolve();
+    return;
   }
 
   if (!dbConnectionPromise) {
@@ -41,10 +33,10 @@ function connectDB() {
       });
   }
 
-  return dbConnectionPromise;
+  await dbConnectionPromise;
 }
 
-// Ensure MongoDB is connected before handling API requests
+// Ensure database connection before API routes
 app.use(async (req, res, next) => {
   try {
     await connectDB();
@@ -57,10 +49,18 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Export the Express app for Vercel
+// Test route
+app.get("/", (req, res) => {
+  res.send("Auto-Mark backend is running!");
+});
+
+// Products API
+app.use("/api/products", require("./routes/products"));
+
+// Export for Vercel
 module.exports = app;
 
-// Start a local server during development
+// Local development
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
